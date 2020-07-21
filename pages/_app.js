@@ -4,6 +4,7 @@ import { TinaProvider, TinaCMS } from "tinacms"
 import { TinacmsGithubProvider, GithubMediaStore } from "react-tinacms-github"
 import { Normalize } from "styled-normalize"
 import { AlpacaGitHubClient } from "../utils/githubClient"
+import { LocalizationApi } from "../api/localization"
 // import { GithubClient } from "react-tinacms-github"
 // eslint-disable-next-line no-undef
 require("typeface-source-code-pro")
@@ -29,6 +30,7 @@ class MyApp extends App {
         /**
          * 2. Register the GithubClient
          */
+        localization: new LocalizationApi(),
         github: client,
       },
       sidebar: false,

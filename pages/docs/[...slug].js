@@ -24,6 +24,7 @@ import {
 } from "@hooks"
 import { createToc } from "@utils"
 import getGlobalStaticProps from "../../utils/getGlobalStaticProps"
+import useLangForm from "../../hooks/useGloabalLanguageForm"
 
 const DocTemplate = (props) => {
   const cms = useCMS()
@@ -40,6 +41,7 @@ const DocTemplate = (props) => {
   const [data, form] = useFormEditDoc(props.file)
   usePlugin(form)
   const [navData, navForm] = useNavigationForm(props.navigation, props.preview)
+  useLangForm()
   const nestedDocs = navData.config
   const [styleData] = useGlobalStyleForm(props.styleFile, props.preview)
 
@@ -66,6 +68,20 @@ const DocTemplate = (props) => {
                 <h1>
                   <InlineTextField name="frontmatter.title" />
                 </h1>
+                <button
+                  onClick={() => {
+                    cms.api.localization.setLocal(cms.api.localization.localList[1])
+                  }}
+                >
+                  change data
+                </button>
+                <button
+                  onClick={() => {
+                    console.log(cms.api.localization.getLocal())
+                  }}
+                >
+                  see data
+                </button>
                 {!props.preview && props.Alltocs.length > 0 && <Toc tocItems={props.Alltocs} />}
                 <InlineWysiwyg
                   imageProps={{
