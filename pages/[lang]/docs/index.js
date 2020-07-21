@@ -8,7 +8,7 @@ const DocIndex = (props) => {
   const topDoc = props.navigation.data.config[0].slug
 
   useEffect(() => {
-    router.push(`/docs/${topDoc}`)
+    router.push(`/en/docs/${topDoc}`)
   })
   return <p>Redirecting...</p>
 }
@@ -46,7 +46,7 @@ export const getStaticProps = async function ({ preview, previewData }) {
   }
 
   // Not in preview mode so we will get contents from the file system
-  const allNestedDocs = require("../../docs/config.json")
+  const allNestedDocs = require("../../../docs/config.json")
 
   return {
     props: {
@@ -60,4 +60,10 @@ export const getStaticProps = async function ({ preview, previewData }) {
   }
 }
 
+export const getStaticPaths = () => {
+  return {
+    paths: ["/en/docs", "/fr/docs"],
+    fallback: true,
+  }
+}
 export default DocIndex

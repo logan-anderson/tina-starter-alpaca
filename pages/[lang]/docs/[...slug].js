@@ -23,8 +23,9 @@ import {
   useGlobalStyleForm,
 } from "@hooks"
 import { createToc } from "@utils"
-import getGlobalStaticProps from "../../utils/getGlobalStaticProps"
-import useLangForm from "../../hooks/useGloabalLanguageForm"
+import getGlobalStaticProps from "../../../utils/getGlobalStaticProps"
+import useLangForm from "../../../hooks/useGloabalLanguageForm"
+// import { connectScrollTo } from "react-instantsearch-dom"
 
 const DocTemplate = (props) => {
   const cms = useCMS()
@@ -122,64 +123,82 @@ const DocTemplate = (props) => {
 
 export const getStaticProps = async function ({ preview, previewData, params }) {
   const global = await getGlobalStaticProps(preview, previewData)
-  const { slug } = params
+  let { slug, lang } = params
   const realSlugs = [...slug]
-  let lang = ""
-  if (slug[0]?.startsWith("lang")) {
-    console.log("lang mode")
-    lang = "." + realSlugs[0]
-    realSlugs.splice(0, 1)
+  console.log(slug)
+  // let lang = ""
+  // if (slug[0]?.startsWith("lang")) {
+  //   console.log("lang mode")
+  //   lang = "." + realSlugs[0]
+  //   realSlugs.splice(0, 1)
+  // }
+  if (lang === "en") {
+    lang = ""
+  } else {
+    lang = "." + lang
   }
-  const fileRelativePath = `docs/${realSlugs.join("/")}${lang}.md`
+  const fileRelativePath = `docs/${slug.join("/")}${lang}.md`
 
   // we need these to be in scope for the catch statment
-  let previewProps
-  let allNestedDocsRemote
+  let previewProps = {}
+  let allNestedDocsRemote = {}
   let Alltocs = ""
   // if we are in preview mode we will get the contents from github
+  const getPropsFunc = async (fileRelativePath) => {
+    previewProps = await getGithubPreviewProps({
+      ...previewData,
+      fileRelativePath,
+      parse: parseMarkdown,
+    })
+    allNestedDocsRemote = await getGithubPreviewProps({
+      ...previewData,
+      fileRelativePath: "docs/config.json",
+      parse: parseJson,
+    })
+
+    if (typeof window === "undefined") {
+      Alltocs = createToc(previewProps.props.file.data.markdownBody)
+    }
+    return {
+      props: {
+        ...global,
+        // markdown file stored in file:
+        ...previewProps.props,
+        // json for navigation form
+        navigation: {
+          ...allNestedDocsRemote.props.file,
+          fileRelativePath: `docs/config.json`,
+        },
+        Alltocs,
+        previewURL: `https://raw.githubusercontent.com/${previewData.working_repo_full_name}/${previewData.head_branch}`,
+      },
+    }
+  }
+
   if (preview) {
     try {
-      previewProps = await getGithubPreviewProps({
-        ...previewData,
-        fileRelativePath,
-        parse: parseMarkdown,
-      })
-      allNestedDocsRemote = await getGithubPreviewProps({
-        ...previewData,
-        fileRelativePath: "docs/config.json",
-        parse: parseJson,
-      })
-
-      if (typeof window === "undefined") {
-        Alltocs = createToc(previewProps.props.file.data.markdownBody)
-      }
-      return {
-        props: {
-          ...global,
-          // markdown file stored in file:
-          ...previewProps.props,
-          // json for navigation form
-          navigation: {
-            ...allNestedDocsRemote.props.file,
-            fileRelativePath: `docs/config.json`,
-          },
-          Alltocs,
-          previewURL: `https://raw.githubusercontent.com/${previewData.working_repo_full_name}/${previewData.head_branch}`,
-        },
-      }
+      const returnVal = await getPropsFunc(fileRelativePath)
+      return returnVal
     } catch (e) {
-      // return the erros from gitGithubPreviewProps
-      return {
-        props: {
-          ...previewProps.props,
-          ...allNestedDocsRemote.props,
-        },
+      // lets try to get the stuff from github but this time with the default lang
+      try {
+        console.log("geting other return val")
+        const returnVal = await getPropsFunc(`/docs/${slug.join("/")}.md`)
+        return returnVal
+      } catch (error) {
+        // return the erros from gitGithubPreviewProps
+        return {
+          props: {
+            ...previewProps.props,
+            ...allNestedDocsRemote.props,
+          },
+        }
       }
     }
   }
 
   // Not in preview mode so we will get contents from the file system
-  const allNestedDocs = require("../../docs/config.json")
+  const allNestedDocs = require("../../../docs/config.json")
   const content = await import(`@docs/${slug.join("/")}.md`)
   const data = matter(content.default)
 
@@ -220,7 +239,7 @@ export const getStaticPaths = async function () {
       // .filter(file => !file.endsWith('index.md'))
       .map((file) => {
         const path = file.substring(contentDir.length, file.length - 3)
-        return { params: { slug: path.split("/") } }
+        return { params: { slug: path.split("/"), lang: "en" } }
       }),
   }
 }

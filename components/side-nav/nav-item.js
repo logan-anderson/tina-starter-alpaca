@@ -41,15 +41,11 @@ const NavItem = ({ itemData: { slug, children, title, type }, active, currentSlu
   }
 
   const cms = useCMS()
-  const lang = cms.api.localization.getNonDefaultLocal()
+  const lang = cms.api.localization.getLocal()
   return (
     <div>
       {type === "link" && (
-        <Link
-          href={`/docs/[...slug]`}
-          as={`/docs/${lang ? `lang-${lang}/` : lang}${slug}`}
-          passHref
-        >
+        <Link href={`/[lang]/docs/[...slug]`} as={`/en/docs/${slug}`} passHref>
           {renderLink()}
         </Link>
       )}

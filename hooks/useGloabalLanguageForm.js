@@ -20,16 +20,10 @@ const useLangForm = () => {
       try {
         cms.api.localization.setLocal(data.language)
         let currentRoutes = router.asPath.split("/")
-        // remove docs path
-        console.log(currentRoutes)
-        currentRoutes.splice(0, 2)
-        console.log(currentRoutes)
-        if (currentRoutes[0].startsWith("lang")) {
-          currentRoutes.splice(0, 1)
-        }
+        currentRoutes.splice(0, 3)
         cms.alerts.success("language set")
         const lang = cms.api.localization.getNonDefaultLocal()
-        router.push(`/docs/${lang ? `lang-${lang}/` : lang}${currentRoutes.join("/")}`)
+        router.push(`/${lang}/docs/${currentRoutes.join("/")}`)
       } catch (error) {
         console.error(error)
       }
