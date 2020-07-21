@@ -4,6 +4,7 @@ import Link from "next/link"
 
 import isNavActive from "@utils/isNavActive"
 import { NavItemLink, NavGroup } from "./styles"
+import { useCMS } from "tinacms"
 
 const NavItem = ({ itemData: { slug, children, title, type }, active, currentSlug }) => {
   const [showChildrens, setShowChildrens] = useState(type === "group")
@@ -39,10 +40,16 @@ const NavItem = ({ itemData: { slug, children, title, type }, active, currentSlu
     )
   }
 
+  const cms = useCMS()
+  const lang = cms.api.localization.getNonDefaultLocal()
   return (
     <div>
       {type === "link" && (
-        <Link href={`/docs/[...slug]`} as={`/docs/${slug}`} passHref>
+        <Link
+          href={`/docs/[...slug]`}
+          as={`/docs/${lang ? `lang-${lang}/` : lang}${slug}`}
+          passHref
+        >
           {renderLink()}
         </Link>
       )}

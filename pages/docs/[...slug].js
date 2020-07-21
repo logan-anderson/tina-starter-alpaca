@@ -127,11 +127,10 @@ export const getStaticProps = async function ({ preview, previewData, params }) 
   let lang = ""
   if (slug[0]?.startsWith("lang")) {
     console.log("lang mode")
-    lang = realSlugs[0]
+    lang = "." + realSlugs[0]
     realSlugs.splice(0, 1)
   }
-  console.log({ lang })
-  const fileRelativePath = `docs/${realSlugs.join("/")}.${lang}.md`
+  const fileRelativePath = `docs/${realSlugs.join("/")}${lang}.md`
 
   // we need these to be in scope for the catch statment
   let previewProps
