@@ -123,7 +123,15 @@ const DocTemplate = (props) => {
 export const getStaticProps = async function ({ preview, previewData, params }) {
   const global = await getGlobalStaticProps(preview, previewData)
   const { slug } = params
-  const fileRelativePath = `docs/${slug.join("/")}.md`
+  const realSlugs = [...slug]
+  let lang = ""
+  if (slug[0]?.startsWith("lang")) {
+    console.log("lang mode")
+    lang = realSlugs[0]
+    realSlugs.splice(0, 1)
+  }
+  console.log({ lang })
+  const fileRelativePath = `docs/${realSlugs.join("/")}.${lang}.md`
 
   // we need these to be in scope for the catch statment
   let previewProps
