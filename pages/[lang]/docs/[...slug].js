@@ -25,20 +25,24 @@ import {
 import { createToc } from "@utils"
 import getGlobalStaticProps from "../../../utils/getGlobalStaticProps"
 import useLangForm from "../../../hooks/useGloabalLanguageForm"
+// import setLangFromRouter from "../../../utils/localization/setLangFromRouter"
+// import redirectToLocal from "../../../utils/localization/redirectToLocal"
 // import { connectScrollTo } from "react-instantsearch-dom"
-
+import redirectToLocal from "../../../utils/localization/redirectToLocal"
 const DocTemplate = (props) => {
-  const cms = useCMS()
-  const previewURL = props.previewURL || ""
-  const router = useRouter()
   if (!props.file) {
     return <Error statusCode={404} />
   }
+  const cms = useCMS()
+  const previewURL = props.previewURL || ""
+  const router = useRouter()
 
-  if (router.isFallback) {
-    return <div>Loading...</div>
-  }
-
+  // cms.events.subscribe("plugins:*:form", (event) => {
+  //   console.log({ event })
+  //   console.log(`Something happened to the form plugins`)
+  // })
+  // setLangFromRouter(router, cms)
+  // redirectToLocal(router, cms)
   const [data, form] = useFormEditDoc(props.file)
   usePlugin(form)
   const [navData, navForm] = useNavigationForm(props.navigation, props.preview)
@@ -50,6 +54,10 @@ const DocTemplate = (props) => {
   // wrappers around using the content-creator puglin with tinaCMS
   useCreateMainDoc(nestedDocs)
   useCreateChildPage(nestedDocs)
+
+  if (router.isFallback) {
+    return <div>Loading...</div>
+  }
 
   return (
     <Layout showDocsSearcher splitView theme={styleData} searchIndex="tina-starter-alpaca-Docs">
@@ -71,17 +79,19 @@ const DocTemplate = (props) => {
                 </h1>
                 <button
                   onClick={() => {
-                    cms.api.localization.setLocal(cms.api.localization.localList[1])
+                    cms.api.localization.setLocal("fr")
+                    redirectToLocal(router, cms)
                   }}
                 >
-                  change data
+                  change lang to fr
                 </button>
                 <button
                   onClick={() => {
-                    console.log(cms.api.localization.getLocal())
+                    cms.api.localization.setLocal("en")
+                    redirectToLocal(router, cms)
                   }}
                 >
-                  see data
+                  change lang to en
                 </button>
                 {!props.preview && props.Alltocs.length > 0 && <Toc tocItems={props.Alltocs} />}
                 <InlineWysiwyg
@@ -124,14 +134,13 @@ const DocTemplate = (props) => {
 export const getStaticProps = async function ({ preview, previewData, params }) {
   const global = await getGlobalStaticProps(preview, previewData)
   let { slug, lang } = params
-  const realSlugs = [...slug]
-  console.log(slug)
   // let lang = ""
   // if (slug[0]?.startsWith("lang")) {
   //   console.log("lang mode")
   //   lang = "." + realSlugs[0]
   //   realSlugs.splice(0, 1)
   // }
+  // TODO: this should be if lang = default lang
   if (lang === "en") {
     lang = ""
   } else {
@@ -233,14 +242,18 @@ export const getStaticPaths = async function () {
   const fg = require("fast-glob")
   const contentDir = "docs/"
   const files = await fg(`${contentDir}**/*.md`)
+  const paths = []
+  const langs = ["en", "fr"]
+  langs.forEach((lang) => {
+    const tempfiles = files.map((file) => {
+      const path = file.substring(contentDir.length, file.length - 3)
+      return { params: { slug: path.split("/"), lang } }
+    })
+    paths.push(...tempfiles)
+  })
   return {
     fallback: true,
-    paths: files
-      // .filter(file => !file.endsWith('index.md'))
-      .map((file) => {
-        const path = file.substring(contentDir.length, file.length - 3)
-        return { params: { slug: path.split("/"), lang: "en" } }
-      }),
+    paths,
   }
 }
 

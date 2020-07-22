@@ -13,11 +13,6 @@ export class LocalizationApi {
       ? this.local
       : this.getCachedData(LOCALIZATION_ID) || this.local
   }
-  getNonDefaultLocal() {
-    // return this.getLocal()
-    const currentLocal = this.getLocal()
-    return currentLocal === this.default ? "" : currentLocal
-  }
   setLocal(local) {
     this.local = local
     this.setCachedData(LOCALIZATION_ID, local)

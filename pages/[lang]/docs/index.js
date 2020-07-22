@@ -1,15 +1,17 @@
 import { useRouter } from "next/router"
 import { useEffect } from "react"
 import { getGithubPreviewProps, parseJson } from "next-tinacms-github"
+import { useCMS } from "tinacms"
 
 // Redirect to the first doc page
 const DocIndex = (props) => {
   const router = useRouter()
+  const cms = useCMS()
   const topDoc = props.navigation.data.config[0].slug
-
+  const lang = cms.api.localization.getLocal()
   useEffect(() => {
-    router.push(`/en/docs/${topDoc}`)
-  })
+    router.push("/[lang]/docs/[...slug]", `/${lang}/docs/${topDoc}`)
+  }, [])
   return <p>Redirecting...</p>
 }
 
