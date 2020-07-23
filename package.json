@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "next",
+    "test": "jest",
     "debug": "NODE_OPTIONS='--inspect' next",
     "build": "next build",
     "start": "cross-env NODE_ENV=production next start",
@@ -57,6 +58,8 @@
   "devDependencies": {
     "@babel/core": "^7.10.2",
     "@babel/node": "^7.10.1",
+    "@babel/preset-typescript": "^7.10.4",
+    "@types/jest": "^26.0.5",
     "@types/node": "^14.0.18",
     "babel-eslint": "^10.1.0",
     "babel-plugin-inline-react-svg": "^1.1.1",
@@ -68,6 +71,7 @@
     "eslint-plugin-react": "^7.20.3",
     "husky": "^4.2.3",
     "hygen-next-tinacms-github": "https://github.com/dwalkr/hygen-next-tinacms-github",
+    "jest": "^26.1.0",
     "lint-staged": "^10.1.0",
     "prettier": "2.0.2"
   },
