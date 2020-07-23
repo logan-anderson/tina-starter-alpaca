@@ -5,6 +5,10 @@ import { useCMS } from "tinacms"
 
 // Redirect to the first doc page
 const DocIndex = (props) => {
+  if (!props.navigation) {
+    return null
+  }
+  console.log(props)
   const router = useRouter()
   const cms = useCMS()
   const topDoc = props.navigation.data.config[0].slug
@@ -38,6 +42,9 @@ export const getStaticProps = async function ({ preview, previewData }) {
         },
       }
     } catch (e) {
+      console.error(e)
+      console.log("this is a error that should not happen")
+      console.log(e)
       // return the erros from gitGithubPreviewProps
       return {
         props: {
@@ -49,6 +56,7 @@ export const getStaticProps = async function ({ preview, previewData }) {
 
   // Not in preview mode so we will get contents from the file system
   const allNestedDocs = require("../../../docs/config.json")
+  console.log({ allNestedDocs })
 
   return {
     props: {
@@ -64,7 +72,14 @@ export const getStaticProps = async function ({ preview, previewData }) {
 
 export const getStaticPaths = () => {
   return {
-    paths: ["/en/docs", "/fr/docs"],
+    paths: [
+      {
+        params: { lang: "en" },
+      },
+      {
+        params: { lang: "fr" },
+      },
+    ],
     fallback: true,
   }
 }

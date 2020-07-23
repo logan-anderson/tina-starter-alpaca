@@ -25,25 +25,28 @@ import {
 import { createToc } from "@utils"
 import getGlobalStaticProps from "../../../utils/getGlobalStaticProps"
 import useLangForm from "../../../hooks/useGloabalLanguageForm"
-// import setLangFromRouter from "../../../utils/localization/setLangFromRouter"
-// import redirectToLocal from "../../../utils/localization/redirectToLocal"
+import setLangFromRouter from "../../../utils/localization/setLangFromRouter"
 // import { connectScrollTo } from "react-instantsearch-dom"
 import redirectToLocal from "../../../utils/localization/redirectToLocal"
 const DocTemplate = (props) => {
+  // console.log(props)
   if (!props.file) {
     return <Error statusCode={404} />
   }
   const cms = useCMS()
   const previewURL = props.previewURL || ""
   const router = useRouter()
+  const lang = useCMS().api.localization.getLocal()
 
-  // cms.events.subscribe("plugins:*:form", (event) => {
-  //   console.log({ event })
-  //   console.log(`Something happened to the form plugins`)
-  // })
-  // setLangFromRouter(router, cms)
-  // redirectToLocal(router, cms)
-  const [data, form] = useFormEditDoc(props.file)
+  cms.events.subscribe("plugins:*:form", (event) => {
+    console.log({ event })
+    console.log(`Something happened to the form plugins`)
+  })
+  setLangFromRouter(router, cms)
+  console.log("passing")
+  console.log(props.file)
+  const [data, form] = useFormEditDoc(props.file, lang)
+  console.log({ dataFomUseFormEditDoc: data })
   usePlugin(form)
   const [navData, navForm] = useNavigationForm(props.navigation, props.preview)
   useLangForm()
@@ -115,6 +118,8 @@ const DocTemplate = (props) => {
                   }}
                   name="markdownBody"
                 >
+                  <MarkdownWrapper source={props.file.data.markdownBody} />
+                  <hr />
                   <MarkdownWrapper source={data.markdownBody} />
                 </InlineWysiwyg>
               </main>
@@ -134,12 +139,6 @@ const DocTemplate = (props) => {
 export const getStaticProps = async function ({ preview, previewData, params }) {
   const global = await getGlobalStaticProps(preview, previewData)
   let { slug, lang } = params
-  // let lang = ""
-  // if (slug[0]?.startsWith("lang")) {
-  //   console.log("lang mode")
-  //   lang = "." + realSlugs[0]
-  //   realSlugs.splice(0, 1)
-  // }
   // TODO: this should be if lang = default lang
   if (lang === "en") {
     lang = ""
@@ -208,8 +207,15 @@ export const getStaticProps = async function ({ preview, previewData, params }) 
 
   // Not in preview mode so we will get contents from the file system
   const allNestedDocs = require("../../../docs/config.json")
-  const content = await import(`@docs/${slug.join("/")}.md`)
-  const data = matter(content.default)
+  let content = ""
+  try {
+    const data = await import(`@docs/${slug.join("/")}${lang}.md`)
+    content = data.default
+  } catch (error) {
+    const data = await import(`@docs/${slug.join("/")}.md`)
+    content = data.default
+  }
+  const data = matter(content)
 
   // Create Toc (table of contents)
   if (typeof window === "undefined") {

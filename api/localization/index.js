@@ -3,7 +3,7 @@ const LOCALIZATION_ID = "localization-cache"
 
 export class LocalizationApi {
   constructor(localList = localizationList) {
-    console.log("this class is being constructed")
+    // console.log("this class is being constructed")
     this.default = "en"
     this.local = this.getCachedData(LOCALIZATION_ID) || this.default
     this.localList = localList

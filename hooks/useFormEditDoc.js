@@ -1,8 +1,10 @@
 import { useGithubMarkdownForm } from "react-tinacms-github"
+import { useForm } from "tinacms"
 
-const useFormEditDocs = (markdownFile) => {
+const useFormEditDocs = (markdownFile, lang) => {
   const formOptions = {
     label: "Edit doc page",
+    id: `${markdownFile.fileRelativePath}-${lang}`,
     fields: [
       {
         name: "frontmatter.title",
