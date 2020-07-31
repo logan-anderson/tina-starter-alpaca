@@ -26,7 +26,7 @@ const useLangForm = () => {
         currentRoutes.splice(0, 3)
         cms.alerts.success("language set")
         const lang = cms.api.localization.getFormateLocale()
-        router.push(`/${lang}/docs/${currentRoutes.join("/")}`)
+        router.push("/[lang]/docs/[...slug]", `/${lang}/docs/${currentRoutes.join("/")}`)
         // if (typeof window !== "undefined") {
         //   cms.api.localization.setLocal(data.language)
         // }

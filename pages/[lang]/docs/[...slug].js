@@ -118,8 +118,6 @@ const DocTemplate = (props) => {
                   }}
                   name="markdownBody"
                 >
-                  <MarkdownWrapper source={props.file.data.markdownBody} />
-                  <hr />
                   <MarkdownWrapper source={data.markdownBody} />
                 </InlineWysiwyg>
               </main>
