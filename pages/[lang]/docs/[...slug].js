@@ -36,7 +36,7 @@ const DocTemplate = (props) => {
   const cms = useCMS()
   const previewURL = props.previewURL || ""
   const router = useRouter()
-  const lang = useCMS().api.localization.getLocal()
+  const lang = useCMS().api.localization.getFormateLocale()
 
   cms.events.subscribe("plugins:*:form", (event) => {
     console.log({ event })
@@ -82,7 +82,7 @@ const DocTemplate = (props) => {
                 </h1>
                 <button
                   onClick={() => {
-                    cms.api.localization.setLocal("fr")
+                    cms.api.localization.locale = { language: "fr" }
                     redirectToLocal(router, cms)
                   }}
                 >
@@ -90,7 +90,7 @@ const DocTemplate = (props) => {
                 </button>
                 <button
                   onClick={() => {
-                    cms.api.localization.setLocal("en")
+                    cms.api.localization.locale = { language: "en" }
                     redirectToLocal(router, cms)
                   }}
                 >

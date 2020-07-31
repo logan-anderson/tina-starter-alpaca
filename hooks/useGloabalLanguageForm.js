@@ -8,22 +8,24 @@ const useLangForm = () => {
     label: "Choose language",
     layout: "fullscreen",
     initialValues: {
-      language: cms.api.localization.getLocal(),
+      language: cms.api.localization.getFormateLocale(),
     },
     fields: [
       {
         name: "language",
         component: "select",
-        options: cms.api.localization.localList,
+        options: cms.api.localization.localeList.map((lang) => {
+          return cms.api.localization.localeToString(lang)
+        }),
       },
     ],
     onSubmit: (data) => {
       try {
-        cms.api.localization.setLocal(data.language)
+        cms.api.localization.locale = { language: data.language }
         let currentRoutes = router.asPath.split("/")
         currentRoutes.splice(0, 3)
         cms.alerts.success("language set")
-        const lang = cms.api.localization.getLocal()
+        const lang = cms.api.localization.getFormateLocale()
         router.push(`/${lang}/docs/${currentRoutes.join("/")}`)
         // if (typeof window !== "undefined") {
         //   cms.api.localization.setLocal(data.language)

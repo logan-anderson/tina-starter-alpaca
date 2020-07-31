@@ -2,9 +2,8 @@ import { useCMS, usePlugins } from "tinacms"
 import { useRouter } from "next/router"
 import slugify from "slugify"
 import { FORM_ERROR } from "final-form"
-
 import { toMarkdownString, flatDocs, getRandID } from "@utils"
-
+import { LocalGroupField } from "../utils/localization/LocalizationGroupField"
 const useCreateMainDoc = (allDocs) => {
   const router = useRouter()
   const cms = useCMS()
@@ -33,6 +32,7 @@ const useCreateMainDoc = (allDocs) => {
             if (!validTitle) return "titles must be unique, maybe add a number to the end?"
           },
         },
+        ...LocalGroupField.fields,
       ],
       onSubmit: async ({ title }) => {
         const slug = slugify(title, { lower: true })

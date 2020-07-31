@@ -73,7 +73,8 @@
     "hygen-next-tinacms-github": "https://github.com/dwalkr/hygen-next-tinacms-github",
     "jest": "^26.1.0",
     "lint-staged": "^10.1.0",
-    "prettier": "2.0.2"
+    "prettier": "2.0.2",
+    "typescript": "^3.9.7"
   },
   "husky": {
     "hooks": {

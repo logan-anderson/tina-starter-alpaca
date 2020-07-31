@@ -15,7 +15,8 @@ const Page = ({ file, preview, styleFile }) => {
   // can remove this if you want to use the index page
   const cms = useCMS()
   const router = useRouter()
-  const lang = cms.api.localization.getLocal()
+  const lang = cms.api.localization.getFormateLocale()
+  console.log({ lang })
   useEffect(() => {
     router.push("/[lang]/docs", `/${lang}/docs`)
   }, [])

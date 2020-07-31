@@ -12,7 +12,7 @@ const DocIndex = (props) => {
   const router = useRouter()
   const cms = useCMS()
   const topDoc = props.navigation.data.config[0].slug
-  const lang = cms.api.localization.getLocal()
+  const lang = cms.api.localization.getFormateLocale()
   useEffect(() => {
     router.push("/[lang]/docs/[...slug]", `/${lang}/docs/${topDoc}`)
   }, [])

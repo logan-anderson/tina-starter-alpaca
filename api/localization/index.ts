@@ -11,38 +11,46 @@ export interface Locale {
 export class LocalizationApi {
   public default: Locale = {
     language: "en",
-    region: "CA",
-    encoding: "utf-8",
-    modifiers: ["example"],
+    // region: "CA",
+    // encoding: "utf-8",
+    // modifiers: ["example"],
   }
-  public locale: Locale
+  public props: {
+    locale: Locale
+  }
   public localeList: Locale[]
   constructor(localeList = defaultList) {
-    // console.log("this class is being constructed")
-    this.locale = this.getCachedData(LOCALE_CACHE_KEY) || this.default
+    this.props = {
+      locale: this.getCachedData(LOCALE_CACHE_KEY) || this.default,
+    }
     this.localeList = localeList
   }
-  getLocale(): string {
-    const currentLocal =
-      this.locale === this.default
-        ? this.locale
-        : this.getCachedData(LOCALE_CACHE_KEY) || this.locale
-
+  public getFormateLocale(): string {
+    return this.localeToString(this.locale)
+  }
+  set locale(locale: Locale) {
+    this.props.locale = locale
+    this.setCachedData(LOCALE_CACHE_KEY, locale)
+  }
+  get locale(): Locale {
+    return this.props.locale
+  }
+  public localeToString(currentLocal: Locale): string {
     return `${currentLocal.language || ""}${currentLocal.region ? "_" + currentLocal.region : ""}${
       currentLocal.encoding ? "." + currentLocal.encoding : ""
     }${currentLocal.modifiers ? "@" + currentLocal.modifiers.join("@") : ""}`
   }
-  setLocale(locale) {
-    this.locale = locale
-    this.setCachedData(LOCALE_CACHE_KEY, locale)
-  }
-  getCachedData = (id): Locale => {
+  getCachedData = (id: string): Locale | undefined => {
     if (typeof localStorage === "undefined") {
-      return {}
+      return
     }
-    return JSON.parse(localStorage.getItem(id) || "{}")
+    const cache = JSON.parse(localStorage.getItem(id) || "{}")
+    if (Object.keys(cache).length === 0) {
+      return
+    }
+    return cache
   }
-  setCachedData = (id, data) => {
+  setCachedData = (id: string, data: Object) => {
     if (typeof localStorage === "undefined") {
       return
     }

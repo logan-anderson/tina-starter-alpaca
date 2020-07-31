@@ -41,7 +41,7 @@ const NavItem = ({ itemData: { slug, children, title, type }, active, currentSlu
   }
 
   const cms = useCMS()
-  const lang = cms.api.localization.getLocal()
+  const lang = cms.api.localization.getFormateLocale()
   return (
     <div>
       {type === "link" && (

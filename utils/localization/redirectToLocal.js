@@ -1,5 +1,5 @@
 export default (router, cms) => {
-  let lang = cms.api.localization.getLocal()
+  let lang = cms.api.localization.getFormateLocale()
   const { lang: routeLang } = router.query
   console.log(router)
   if (lang !== routeLang) {
@@ -11,8 +11,8 @@ export default (router, cms) => {
       const asPath = `/${lang}/${router.asPath.split("/").slice(2).join("/")}`
       console.log({ asPath })
       console.log({ route: router.route })
-      // router.push(router.route, asPath)
-      window.location.pathname = asPath
+      router.push(router.route, asPath)
+      // window.location.pathname = asPath
       // router.reload()
     }
   }
