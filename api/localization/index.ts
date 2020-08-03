@@ -1,6 +1,5 @@
 const defaultList: Locale[] = [{ language: "en" }, { language: "fr" }, { language: "sp" }]
 const LOCALE_CACHE_KEY = "locale-cache"
-
 export interface Locale {
   language?: string
   region?: string

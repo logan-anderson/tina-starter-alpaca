@@ -2,8 +2,8 @@ import matter from "gray-matter"
 import { useRouter } from "next/router"
 import Error from "next/error"
 import { useFormScreenPlugin, usePlugin, useCMS } from "tinacms"
-import { InlineTextField, InlineField } from "react-tinacms-inline"
-import { InlineWysiwyg, Wysiwyg } from "react-tinacms-editor"
+import { InlineTextField } from "react-tinacms-inline"
+import { InlineWysiwyg } from "react-tinacms-editor"
 import { getGithubPreviewProps, parseMarkdown, parseJson } from "next-tinacms-github"
 import { InlineForm } from "react-tinacms-inline"
 import Head from "@components/head"
@@ -36,17 +36,14 @@ const DocTemplate = (props) => {
   const cms = useCMS()
   const previewURL = props.previewURL || ""
   const router = useRouter()
-  const lang = useCMS().api.localization.getFormateLocale()
+  if (typeof window === undefined) {
+    setLangFromRouter(router, cms)
+  }
 
-  cms.events.subscribe("plugins:*:form", (event) => {
-    console.log({ event })
-    console.log(`Something happened to the form plugins`)
-  })
-  setLangFromRouter(router, cms)
-  console.log("passing")
-  console.log(props.file)
+  const lang = cms.api.localization.getFormateLocale()
+  console.log({ file: props.file, lang })
+
   const [data, form] = useFormEditDoc(props.file, lang)
-  console.log({ dataFomUseFormEditDoc: data })
   usePlugin(form)
   const [navData, navForm] = useNavigationForm(props.navigation, props.preview)
   useLangForm()
@@ -145,6 +142,8 @@ export const getStaticProps = async function ({ preview, previewData, params }) 
   }
   const fileRelativePath = `docs/${slug.join("/")}${lang}.md`
 
+  console.log({ relPathFromProps: fileRelativePath })
+
   // we need these to be in scope for the catch statment
   let previewProps = {}
   let allNestedDocsRemote = {}
@@ -225,7 +224,7 @@ export const getStaticProps = async function ({ preview, previewData, params }) 
       // the markdown file
       ...global,
       file: {
-        fileRelativePath: `docs/${slug.join("/")}.md`,
+        fileRelativePath,
         data: {
           frontmatter: data.data,
           markdownBody: data.content,
