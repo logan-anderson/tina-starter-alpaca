@@ -30,6 +30,7 @@ import setLangFromRouter from "../../../utils/localization/setLangFromRouter"
 import redirectToLocal from "../../../utils/localization/redirectToLocal"
 import { LangSwitcherPlugin } from "../../../plugins/LangSwitcherPlugin"
 import { useEffect } from "react"
+import useCreateLocaleDoc from "../../../hooks/useCreateCurrentLocalePage"
 
 const DocTemplate = (props) => {
   // console.log(props)
@@ -57,6 +58,7 @@ const DocTemplate = (props) => {
   // wrappers around using the content-creator puglin with tinaCMS
   useCreateMainDoc(nestedDocs)
   useCreateChildPage(nestedDocs)
+  useCreateLocaleDoc(props.file.fileRelativePath)
   useEffect(() => {
     cms.plugins.add(LangSwitcherPlugin)
   }, [])
