@@ -9,7 +9,7 @@ import { LocalizationApi } from "../api/localization/index"
 // eslint-disable-next-line no-undef
 require("typeface-source-code-pro")
 import "./app.css"
-
+import router from "next/router"
 class MyApp extends App {
   constructor(props) {
     super(props)
@@ -21,6 +21,7 @@ class MyApp extends App {
       baseBranch: process.env.BASE_BRANCH,
     })
     const store = new GithubMediaStore(client)
+    const localization = new LocalizationApi()
     this.cms = new TinaCMS({
       enabled: props.pageProps.preview,
       media: {
@@ -30,12 +31,19 @@ class MyApp extends App {
         /**
          * 2. Register the GithubClient
          */
-        localization: new LocalizationApi(),
+        localization,
         github: client,
       },
       sidebar: false,
       toolbar: props.pageProps.preview,
     })
+    localization.onSwitch = () => {
+      let currentRoutes = router.asPath.split("/")
+      currentRoutes.splice(0, 3)
+      this.cms.alerts.success("language set")
+      const lang = localization.getFormateLocale()
+      router.push("/[lang]/docs/[...slug]", `/${lang}/docs/${currentRoutes.join("/")}`)
+    }
   }
 
   render() {

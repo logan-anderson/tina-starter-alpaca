@@ -28,6 +28,9 @@ import useLangForm from "../../../hooks/useGloabalLanguageForm"
 import setLangFromRouter from "../../../utils/localization/setLangFromRouter"
 // import { connectScrollTo } from "react-instantsearch-dom"
 import redirectToLocal from "../../../utils/localization/redirectToLocal"
+import { LangSwitcherPlugin } from "../../../plugins/LangSwitcherPlugin"
+import { useEffect } from "react"
+
 const DocTemplate = (props) => {
   // console.log(props)
   if (!props.file) {
@@ -54,6 +57,9 @@ const DocTemplate = (props) => {
   // wrappers around using the content-creator puglin with tinaCMS
   useCreateMainDoc(nestedDocs)
   useCreateChildPage(nestedDocs)
+  useEffect(() => {
+    cms.plugins.add(LangSwitcherPlugin)
+  }, [])
 
   if (router.isFallback) {
     return <div>Loading...</div>
@@ -77,7 +83,7 @@ const DocTemplate = (props) => {
                 <h1>
                   <InlineTextField name="frontmatter.title" />
                 </h1>
-                <button
+                {/* <button
                   onClick={() => {
                     cms.api.localization.locale = { language: "fr" }
                     redirectToLocal(router, cms)
@@ -92,7 +98,7 @@ const DocTemplate = (props) => {
                   }}
                 >
                   change lang to en
-                </button>
+                </button> */}
                 {!props.preview && props.Alltocs.length > 0 && <Toc tocItems={props.Alltocs} />}
                 <InlineWysiwyg
                   imageProps={{

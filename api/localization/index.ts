@@ -8,6 +8,7 @@ export interface Locale {
 }
 
 export class LocalizationApi {
+  public onSwitch() {}
   public default: Locale = {
     language: "en",
     // region: "CA",

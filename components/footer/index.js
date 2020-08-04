@@ -1,8 +1,8 @@
 import Link from "next/link"
 import { FooterWrapper, FooterLink, EditWithTinaButton } from "./styles"
 import { useCMS } from "tinacms"
-
-const Footer = ({ preview }) => {
+import { LocaleSwitcher } from "../../plugins/LangSwitcherPlugin"
+const Footer = () => {
   return (
     <FooterWrapper>
       <div>
@@ -23,6 +23,7 @@ const Footer = ({ preview }) => {
           >
             GitHub
           </FooterLink>
+          <LocaleSwitcher />
         </section>
 
         <EditLink />
