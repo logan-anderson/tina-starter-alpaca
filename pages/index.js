@@ -2,23 +2,23 @@ import { useEffect } from "react"
 import styled from "styled-components"
 import { getGithubPreviewProps, parseJson } from "next-tinacms-github"
 import { useGithubJsonForm } from "react-tinacms-github"
-import Router from "next/router"
 
 import Head from "@components/head"
 import Layout from "@components/layout"
 import Container from "@components/container"
-import { usePlugin } from "tinacms"
+import { useCMS, usePlugin } from "tinacms"
 import getGlobalStaticProps from "../utils/getGlobalStaticProps"
 import { useGlobalStyleForm } from "@hooks"
+import { useRouter } from "next/router"
 
 const Page = ({ file, preview, styleFile }) => {
   // can remove this if you want to use the index page
+  const cms = useCMS()
+  const router = useRouter()
+  const lang = cms.api.localization.getLocal()
   useEffect(() => {
-    const { pathname } = Router
-    if (pathname == "/") {
-      Router.push("/docs")
-    }
-  })
+    router.push("/[lang]/docs", `/${lang}/docs`)
+  }, [])
   const formOptions = {
     label: "home page",
     fields: [

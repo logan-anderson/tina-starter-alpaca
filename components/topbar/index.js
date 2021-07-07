@@ -66,7 +66,7 @@ const TopBar = ({ showDocsSearcher, theme, searchIndex, searchText }) => {
         <Link href="/features" passHref>
           <NavBarLink>Features</NavBarLink>
         </Link>
-        <Link href="/docs" passHref>
+        <Link href="/[lang]/docs" passHref>
           <NavBarLink>Docs</NavBarLink>
         </Link>
         <NavBarLink

@@ -23,23 +23,33 @@ import {
   useGlobalStyleForm,
 } from "@hooks"
 import { createToc } from "@utils"
-import getGlobalStaticProps from "../../utils/getGlobalStaticProps"
-
+import getGlobalStaticProps from "../../../utils/getGlobalStaticProps"
+import useLangForm from "../../../hooks/useGloabalLanguageForm"
+import setLangFromRouter from "../../../utils/localization/setLangFromRouter"
+// import { connectScrollTo } from "react-instantsearch-dom"
+import redirectToLocal from "../../../utils/localization/redirectToLocal"
 const DocTemplate = (props) => {
-  const cms = useCMS()
-  const previewURL = props.previewURL || ""
-  const router = useRouter()
+  // console.log(props)
   if (!props.file) {
     return <Error statusCode={404} />
   }
+  const cms = useCMS()
+  const previewURL = props.previewURL || ""
+  const router = useRouter()
+  const lang = useCMS().api.localization.getLocal()
 
-  if (router.isFallback) {
-    return <div>Loading...</div>
-  }
-
-  const [data, form] = useFormEditDoc(props.file)
+  cms.events.subscribe("plugins:*:form", (event) => {
+    console.log({ event })
+    console.log(`Something happened to the form plugins`)
+  })
+  setLangFromRouter(router, cms)
+  console.log("passing")
+  console.log(props.file)
+  const [data, form] = useFormEditDoc(props.file, lang)
+  console.log({ dataFomUseFormEditDoc: data })
   usePlugin(form)
   const [navData, navForm] = useNavigationForm(props.navigation, props.preview)
+  useLangForm()
   const nestedDocs = navData.config
   const [styleData] = useGlobalStyleForm(props.styleFile, props.preview)
 
@@ -47,6 +57,10 @@ const DocTemplate = (props) => {
   // wrappers around using the content-creator puglin with tinaCMS
   useCreateMainDoc(nestedDocs)
   useCreateChildPage(nestedDocs)
+
+  if (router.isFallback) {
+    return <div>Loading...</div>
+  }
 
   return (
     <Layout showDocsSearcher splitView theme={styleData} searchIndex="tina-starter-alpaca-Docs">
@@ -66,6 +80,22 @@ const DocTemplate = (props) => {
                 <h1>
                   <InlineTextField name="frontmatter.title" />
                 </h1>
+                <button
+                  onClick={() => {
+                    cms.api.localization.setLocal("fr")
+                    redirectToLocal(router, cms)
+                  }}
+                >
+                  change lang to fr
+                </button>
+                <button
+                  onClick={() => {
+                    cms.api.localization.setLocal("en")
+                    redirectToLocal(router, cms)
+                  }}
+                >
+                  change lang to en
+                </button>
                 {!props.preview && props.Alltocs.length > 0 && <Toc tocItems={props.Alltocs} />}
                 <InlineWysiwyg
                   imageProps={{
@@ -88,6 +118,8 @@ const DocTemplate = (props) => {
                   }}
                   name="markdownBody"
                 >
+                  <MarkdownWrapper source={props.file.data.markdownBody} />
+                  <hr />
                   <MarkdownWrapper source={data.markdownBody} />
                 </InlineWysiwyg>
               </main>
@@ -106,59 +138,84 @@ const DocTemplate = (props) => {
 
 export const getStaticProps = async function ({ preview, previewData, params }) {
   const global = await getGlobalStaticProps(preview, previewData)
-  const { slug } = params
-  const fileRelativePath = `docs/${slug.join("/")}.md`
+  let { slug, lang } = params
+  // TODO: this should be if lang = default lang
+  if (lang === "en") {
+    lang = ""
+  } else {
+    lang = "." + lang
+  }
+  const fileRelativePath = `docs/${slug.join("/")}${lang}.md`
 
   // we need these to be in scope for the catch statment
-  let previewProps
-  let allNestedDocsRemote
+  let previewProps = {}
+  let allNestedDocsRemote = {}
   let Alltocs = ""
   // if we are in preview mode we will get the contents from github
+  const getPropsFunc = async (fileRelativePath) => {
+    previewProps = await getGithubPreviewProps({
+      ...previewData,
+      fileRelativePath,
+      parse: parseMarkdown,
+    })
+    allNestedDocsRemote = await getGithubPreviewProps({
+      ...previewData,
+      fileRelativePath: "docs/config.json",
+      parse: parseJson,
+    })
+
+    if (typeof window === "undefined") {
+      Alltocs = createToc(previewProps.props.file.data.markdownBody)
+    }
+    return {
+      props: {
+        ...global,
+        // markdown file stored in file:
+        ...previewProps.props,
+        // json for navigation form
+        navigation: {
+          ...allNestedDocsRemote.props.file,
+          fileRelativePath: `docs/config.json`,
+        },
+        Alltocs,
+        previewURL: `https://raw.githubusercontent.com/${previewData.working_repo_full_name}/${previewData.head_branch}`,
+      },
+    }
+  }
+
   if (preview) {
     try {
-      previewProps = await getGithubPreviewProps({
-        ...previewData,
-        fileRelativePath,
-        parse: parseMarkdown,
-      })
-      allNestedDocsRemote = await getGithubPreviewProps({
-        ...previewData,
-        fileRelativePath: "docs/config.json",
-        parse: parseJson,
-      })
-
-      if (typeof window === "undefined") {
-        Alltocs = createToc(previewProps.props.file.data.markdownBody)
-      }
-      return {
-        props: {
-          ...global,
-          // markdown file stored in file:
-          ...previewProps.props,
-          // json for navigation form
-          navigation: {
-            ...allNestedDocsRemote.props.file,
-            fileRelativePath: `docs/config.json`,
-          },
-          Alltocs,
-          previewURL: `https://raw.githubusercontent.com/${previewData.working_repo_full_name}/${previewData.head_branch}`,
-        },
-      }
+      const returnVal = await getPropsFunc(fileRelativePath)
+      return returnVal
     } catch (e) {
-      // return the erros from gitGithubPreviewProps
-      return {
-        props: {
-          ...previewProps.props,
-          ...allNestedDocsRemote.props,
-        },
+      // lets try to get the stuff from github but this time with the default lang
+      try {
+        console.log("geting other return val")
+        const returnVal = await getPropsFunc(`/docs/${slug.join("/")}.md`)
+        return returnVal
+      } catch (error) {
+        // return the erros from gitGithubPreviewProps
+        return {
+          props: {
+            ...previewProps.props,
+            ...allNestedDocsRemote.props,
+          },
+        }
       }
     }
   }
 
   // Not in preview mode so we will get contents from the file system
-  const allNestedDocs = require("../../docs/config.json")
-  const content = await import(`@docs/${slug.join("/")}.md`)
-  const data = matter(content.default)
+  const allNestedDocs = require("../../../docs/config.json")
+  let content = ""
+  try {
+    const data = await import(`@docs/${slug.join("/")}${lang}.md`)
+    content = data.default
+  } catch (error) {
+    const data = await import(`@docs/${slug.join("/")}.md`)
+    content = data.default
+  }
+  const data = matter(content)
 
   // Create Toc (table of contents)
   if (typeof window === "undefined") {
@@ -191,14 +248,18 @@ export const getStaticPaths = async function () {
   const fg = require("fast-glob")
   const contentDir = "docs/"
   const files = await fg(`${contentDir}**/*.md`)
+  const paths = []
+  const langs = ["en", "fr"]
+  langs.forEach((lang) => {
+    const tempfiles = files.map((file) => {
+      const path = file.substring(contentDir.length, file.length - 3)
+      return { params: { slug: path.split("/"), lang } }
+    })
+    paths.push(...tempfiles)
+  })
   return {
     fallback: true,
-    paths: files
-      // .filter(file => !file.endsWith('index.md'))
-      .map((file) => {
-        const path = file.substring(contentDir.length, file.length - 3)
-        return { params: { slug: path.split("/") } }
-      }),
+    paths,
   }
 }
 
